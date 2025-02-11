@@ -1,0 +1,26 @@
+from flask import Flask, request, jsonify, render_template  
+import pickle  
+import numpy as np  
+
+app = Flask(__name__)  
+
+model = pickle.load(open("model.pkl", "rb"))  
+
+@app.route("/")  
+def home():  
+    return render_template("index.html")  
+
+@app.route("/predict", methods=["POST"])  
+def predict():  
+    data = request.json  
+    square_ft = float(data["square_ft"])  
+    bedrooms = int(data["bedrooms"])  
+    bathrooms = int(data["bathrooms"])  
+
+    features = np.array([[square_ft, bedrooms, bathrooms]])  
+    predicted_price = model.predict(features)[0]  
+
+    return jsonify({"predicted_price": round(predicted_price, 2)})  
+
+if __name__ == "__main__":  
+    app.run(debug=True)  
